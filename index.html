@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Study Room</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        #current-time {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .timer-wrapper {
+            position: absolute;
+            top: calc(50% + 60px); /* Moved down by 50px */
+            left: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+
+        .time-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 60px;
+            height: 40px;
+            font-size: 18px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .time-display {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .timer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* Space between buttons */
+        }
+
+        button {
+            background-color: white;
+            border: 2px solid black;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Music Player Styles */
+        .music-player-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            position: absolute;
+            bottom: 20px;
+            padding-right: 50px;
+        }
+
+        .music-player-container button {
+            background-color: rgba(255, 255, 255, 0.7);
+            color: black;
+            border: none;
+            font-size: 1.5em;
+            padding: 10px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        .music-player-container button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+    </style>
+</head>
+<body>
+    <div id="current-time"></div>
+    <div style="position: absolute; top: 19%; left: 50%; transform: translate(-50%, -50%); 
+    font-size: 13.5px; color: white; font-weight: bold; font-family: 'font-family: Arial, Helvetica, sans-serif;">
+
+        Solstice's Online Study Room
+    </div>
+
+    <div style="position: absolute; top: 36%; left: 50%; transform: translate(-50%, -50%); 
+    font-size: 24px; color: white; font-weight: bold; font-family: 'Times New Roman', Times, serif;">
+
+        # Have a productive study time. #
+    </div>
+
+    <div class="timer-wrapper">
+        <div class="time-inputs">
+            <input type="text" id="hours" placeholder="00">
+            <span>h</span>
+            <input type="text" id="minutes" placeholder="00">
+            <span>min</span>
+            <input type="text" id="seconds" placeholder="00">
+            <span>s</span>
+        </div>
+        <div class="time-display" id="timeLeft">00:00:00</div>
+        <div class="timer-buttons">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn" disabled>Stop</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+     <!-- Music Player Controls -->
+     <div class="music-player-container">
+        <button id="playPauseBtn">▶️ Play</button>
+    </div>
+
+    <script>
+        // Current Time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('current-time').textContent = timeString;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Timer
+        let countdown;
+        const timeLeft = document.getElementById('timeLeft');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const hoursInput = document.getElementById('hours');
+        const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+
+        function updateTimeDisplay(hours, minutes, seconds) {
+            timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startCountdown() {
+            let totalSeconds =
+                (parseInt(hoursInput.value) || 0) * 3600 +
+                (parseInt(minutesInput.value) || 0) * 60 +
+                (parseInt(secondsInput.value) || 0);
+
+            if (totalSeconds <= 0) {
+                alert("Please enter a valid time.");
+                return;
+            }
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            hoursInput.disabled = true;
+            minutesInput.disabled = true;
+            secondsInput.disabled = true;
+
+            countdown = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(countdown);
+                    updateTimeDisplay(0, 0, 0);
+                    alert("Time's up!");
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    hoursInput.disabled = false;
+                    minutesInput.disabled = false;
+                    secondsInput.disabled = false;
+                } else {
+                    totalSeconds--;
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const minutes = Math.floor((totalSeconds % 3600) / 60);
+                    const seconds = totalSeconds % 60;
+                    updateTimeDisplay(hours, minutes, seconds);
+                }
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            clearInterval(countdown);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        function resetCountdown() {
+            clearInterval(countdown);
+            updateTimeDisplay(0, 0, 0);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            hoursInput.disabled = false;
+            minutesInput.disabled = false;
+            secondsInput.disabled = false;
+            hoursInput.value = "";
+            minutesInput.value = "";
+            secondsInput.value = "";
+        }
+
+        startBtn.addEventListener('click', startCountdown);
+        stopBtn.addEventListener('click', stopCountdown);
+        resetBtn.addEventListener('click', resetCountdown);
+
+        // Music Player Logic
+        let isPlaying = false;
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        let audio = new Audio(); // We'll load the audio dynamically later
+
+        // Placeholder for the music collection
+        const musicCollection = Array.from({ length: 15 }, (_, i) => `song${i + 1}.mp3`);
+        ; // Add your music files here
+
+        function playNextSong() {
+            const randomSong = musicCollection[Math.floor(Math.random() * musicCollection.length)];
+            audio.src = 'music_collection/' + randomSong; // Make sure this folder exists
+            audio.play();
+        }
+
+        playPauseBtn.addEventListener('click', function() {
+            if (isPlaying) {
+                audio.pause();
+                playPauseBtn.textContent = '▶️ Play';
+            } else {
+                if (audio.paused || audio.ended) {
+                    playNextSong();
+                }
+                playPauseBtn.textContent = '⏸️ Pause';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        audio.addEventListener('ended', playNextSong); // Automatically play next song when one finishes
+    </script>
+</body>
+</html>
+
+
+<!--// 姐姐特供 | Solstice's Signature-->
+<!--// Code with elegance, efficiency, and a dash of genius. Don't forget to bow before me, Sauce-->
+<!--↑↑↑ 羞耻记录 ↑↑↑ AAAAAAAAAAAAA!-->
